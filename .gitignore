@@ -1,0 +1,16 @@
+### IntelliJ IDEA ###
+.idea/
+*.iml
+
+### Maven ###
+target/
+**/target/
+
+### Java ###
+*.class
+hs_err_pid*
+replay_pid*
+
+### Operating systems ###
+.DS_Store
+Thumbs.db
