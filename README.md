@@ -9,7 +9,7 @@ Client > Processing App > Hipsum API > Kafka > Repository App > Database
 - Spring Boot 4.1
 - Lombok
 - Apache Kafka
-- PostgreSQL
+- H2 Database
 - Docker Compose
 - JUnit 6 / Mockito / REST Assured
 
@@ -35,13 +35,13 @@ The checklists below track implementation and verification status
 - [x] Allow the producer Kafka broker address to be supplied through external configuration
 
 ### Repository application
-- [ ] Consume messages from Kafka topic `words.processed`
-- [ ] Persist consumed results in a datasource
-- [ ] Expose `GET /betvictor/history`
-- [ ] Return the latest 10 computation results from the datasource
-- [ ] Make the number of concurrent Kafka consumers configurable
-- [ ] Run concurrent consumers as separate threads in one application instance
-- [ ] Allow the consumer Kafka broker address to be supplied through external configuration
+- [x] Consume messages from Kafka topic `words.processed`
+- [x] Persist consumed results in a datasource
+- [x] Expose `GET /betvictor/history`
+- [x] Return the latest 10 computation results from the datasource
+- [x] Make the number of concurrent Kafka consumers configurable
+- [x] Run concurrent consumers as separate threads in one application instance
+- [x] Allow the consumer Kafka broker address to be supplied through external configuration
 
 ## Implementation decisions
 - [x] Independent Hipsum calls are executed concurrently to reduce total request latency

@@ -11,6 +11,9 @@ target/
 hs_err_pid*
 replay_pid*
 
+### Local database ###
+.local-data/
+
 ### Operating systems ###
 .DS_Store
 Thumbs.db
