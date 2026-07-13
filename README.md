@@ -28,11 +28,11 @@ The checklists below track implementation and verification status
   - the average time spent analyzing a paragraph;
   - the total processing time
 - [x] Return the result as JSON using the fields `freq_word`, `avg_paragraph_size`, `avg_paragraph_processing_time`, and `total_processing_time`
-- [ ] Publish exactly one Kafka message to topic `words.processed` for every successful request
-- [ ] Use the same four-field payload in both the HTTP response and the Kafka message
-- [ ] Preserve the send order of messages having the same `freq_word`
-- [ ] Design the Kafka producer assuming topic `words.processed` has four partitions
-- [ ] Allow the producer Kafka broker address to be supplied through external configuration
+- [x] Publish exactly one Kafka message to topic `words.processed` for every successful request
+- [x] Use the same four-field payload in both the HTTP response and the Kafka message
+- [x] Preserve the send order of messages having the same `freq_word`
+- [x] Design the Kafka producer assuming topic `words.processed` has four partitions
+- [x] Allow the producer Kafka broker address to be supplied through external configuration
 
 ### Repository application
 - [ ] Consume messages from Kafka topic `words.processed`

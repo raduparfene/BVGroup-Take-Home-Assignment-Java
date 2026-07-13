@@ -6,16 +6,27 @@ import io.restassured.response.ValidatableResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.kafka.KafkaException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -32,21 +43,34 @@ class TextProcessingApiIntegrationTest {
     @MockitoBean
     private HipsumClient hipsumClient;
 
+    @MockitoBean
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Autowired
+    private JsonMapper jsonMapper;
+
     @Test
-    void returnsProcessedText() {
+    void returnsAndPublishesSameResult() {
         when(hipsumClient.fetchParagraphs(1))
                 .thenReturn(List.of("Alpha beta beta"), List.of("alpha alpha beta gamma"));
+        when(kafkaTemplate.send(anyString(), anyString(), anyString()))
+                .thenReturn(CompletableFuture.completedFuture(null));
 
-        requestText(2)
+        String httpResponse = requestText(2)
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body("$", aMapWithSize(4))
                 .body("freq_word", equalTo("alpha"))
                 .body("avg_paragraph_size", equalTo(3.5F))
                 .body("avg_paragraph_processing_time", greaterThanOrEqualTo(0.0F))
-                .body("total_processing_time", greaterThanOrEqualTo(0.0F));
+                .body("total_processing_time", greaterThanOrEqualTo(0.0F))
+                .extract()
+                .asString();
 
         verify(hipsumClient, times(2)).fetchParagraphs(1);
+        ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(kafkaTemplate).send(eq("words.processed"), eq("alpha"), messageCaptor.capture());
+        assertThat(jsonMapper.readTree(messageCaptor.getValue())).isEqualTo(jsonMapper.readTree(httpResponse));
     }
 
     @ParameterizedTest
@@ -58,12 +82,14 @@ class TextProcessingApiIntegrationTest {
     void rejectsInvalidParagraphCount(String paragraphCount, String expectedMessage) {
         assertError(requestText(paragraphCount), 400, expectedMessage);
         verifyNoInteractions(hipsumClient);
+        verify(kafkaTemplate, never()).send(anyString(), anyString(), anyString());
     }
 
     @Test
     void rejectsMissingParagraphCount() {
         assertError(requestTextWithoutParagraphCount(), 400, "Required request parameter 'p' is missing");
         verifyNoInteractions(hipsumClient);
+        verify(kafkaTemplate, never()).send(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -72,6 +98,18 @@ class TextProcessingApiIntegrationTest {
 
         assertError(requestText(1), 502, "Failed to retrieve paragraphs from Hipsum");
         verify(hipsumClient).fetchParagraphs(1);
+        verify(kafkaTemplate, never()).send(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void returnsServiceUnavailableForKafkaFailure() {
+        when(hipsumClient.fetchParagraphs(1)).thenReturn(List.of("alpha beta beta"));
+        when(kafkaTemplate.send(anyString(), anyString(), anyString()))
+                .thenReturn(CompletableFuture.failedFuture(new KafkaException("broker unavailable")));
+
+        assertError(requestText(1), 503, "Failed to publish the processing result");
+        verify(hipsumClient).fetchParagraphs(1);
+        verify(kafkaTemplate).send(eq("words.processed"), eq("beta"), anyString());
     }
 
     private ValidatableResponse requestText(Object paragraphCount) {

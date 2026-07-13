@@ -11,7 +11,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
-import java.util.concurrent.CompletionException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -41,16 +40,9 @@ public class GlobalExceptionHandler {
         return errorResponse(HttpStatus.BAD_GATEWAY, "Failed to retrieve paragraphs from Hipsum", request);
     }
 
-    @ExceptionHandler(CompletionException.class)
-    public ResponseEntity<ApiErrorResponse> handleAsyncFailure(CompletionException exception, HttpServletRequest request) {
-        Throwable cause = exception.getCause();
-        if (cause instanceof HipsumClientException) {
-            return errorResponse(HttpStatus.BAD_GATEWAY, cause.getMessage(), request);
-        }
-        if (cause instanceof RestClientException) {
-            return errorResponse(HttpStatus.BAD_GATEWAY, "Failed to retrieve paragraphs from Hipsum", request);
-        }
-        return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error while fetching paragraphs", request);
+    @ExceptionHandler({org.springframework.kafka.KafkaException.class, org.apache.kafka.common.KafkaException.class})
+    public ResponseEntity<ApiErrorResponse> handleKafkaFailure(HttpServletRequest request) {
+        return errorResponse(HttpStatus.SERVICE_UNAVAILABLE, "Failed to publish the processing result", request);
     }
 
     private ResponseEntity<ApiErrorResponse> errorResponse(HttpStatus status, String message, HttpServletRequest request) {

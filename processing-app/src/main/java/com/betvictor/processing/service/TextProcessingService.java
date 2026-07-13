@@ -16,6 +16,7 @@ public class TextProcessingService {
 
     private final HipsumParagraphFetcherService hipsumParagraphFetcherService;
     private final ParagraphAnalyzerService paragraphAnalyzerService;
+    private final ProcessedTextPublisherService processedTextPublisherService;
 
     public TextProcessingResponse process(int paragraphCount) {
         validateParagraphCount(paragraphCount);
@@ -29,7 +30,9 @@ public class TextProcessingService {
         double averageProcessingTime = paragraphAnalyzerService.calculateAverageProcessingTime(analyses);
         double totalProcessingTime = (System.nanoTime() - startedAt) / NANOS_PER_MILLISECOND;
 
-        return new TextProcessingResponse(mostFrequentWord, averageParagraphSize, averageProcessingTime, totalProcessingTime);
+        TextProcessingResponse response = new TextProcessingResponse(mostFrequentWord, averageParagraphSize, averageProcessingTime, totalProcessingTime);
+        processedTextPublisherService.publish(response);
+        return response;
     }
 
     private void validateParagraphCount(int paragraphCount) {

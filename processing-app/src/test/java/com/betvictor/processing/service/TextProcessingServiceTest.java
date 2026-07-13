@@ -10,6 +10,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -17,12 +18,14 @@ import static org.mockito.Mockito.when;
 class TextProcessingServiceTest {
 
     private HipsumParagraphFetcherService hipsumParagraphFetcherService;
+    private ProcessedTextPublisherService processedTextPublisherService;
     private TextProcessingService textProcessingService;
 
     @BeforeEach
     void setUp() {
         hipsumParagraphFetcherService = mock(HipsumParagraphFetcherService.class);
-        textProcessingService = new TextProcessingService(hipsumParagraphFetcherService, new ParagraphAnalyzerService());
+        processedTextPublisherService = mock(ProcessedTextPublisherService.class);
+        textProcessingService = new TextProcessingService(hipsumParagraphFetcherService, new ParagraphAnalyzerService(), processedTextPublisherService);
     }
 
     @Test
@@ -36,6 +39,7 @@ class TextProcessingServiceTest {
         assertThat(response.getAvgParagraphProcessingTime()).isNotNegative();
         assertThat(response.getTotalProcessingTime()).isNotNegative();
         verify(hipsumParagraphFetcherService).fetchParagraphs(2);
+        verify(processedTextPublisherService).publish(same(response));
     }
 
     @Test
@@ -44,6 +48,6 @@ class TextProcessingServiceTest {
                 .isInstanceOf(InvalidParagraphCountException.class)
                 .hasMessage("p must be greater than zero");
 
-        verifyNoInteractions(hipsumParagraphFetcherService);
+        verifyNoInteractions(hipsumParagraphFetcherService, processedTextPublisherService);
     }
 }
