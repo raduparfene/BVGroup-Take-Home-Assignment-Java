@@ -37,6 +37,17 @@ class ParagraphAnalyzerServiceTest {
     }
 
     @Test
+    void ignoresNumbers() {
+        List<ParagraphAnalysis> analyses = analyzerService.analyzeParagraphs(List.of("n+1 42 alpha alpha"));
+
+        assertThat(analyses.getFirst().getWordFrequencies()).containsExactlyInAnyOrderEntriesOf(
+                Map.of("n", 1L, "alpha", 2L)
+        );
+        assertThat(analyses.getFirst().getWordCount()).isEqualTo(3);
+        assertThat(analyzerService.extractMostFrequentWord(analyses)).isEqualTo("alpha");
+    }
+
+    @Test
     void rejectsParagraphsWithoutWords() {
         List<ParagraphAnalysis> analyses = analyzerService.analyzeParagraphs(List.of("..."));
 

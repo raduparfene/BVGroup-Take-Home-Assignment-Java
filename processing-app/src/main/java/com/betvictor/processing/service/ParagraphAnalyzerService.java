@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class ParagraphAnalyzerService {
 
     private static final double NANOS_PER_MILLISECOND = 1_000_000.0;
-    private static final Pattern WORD_PATTERN = Pattern.compile("[\\p{L}\\p{N}]+");
+    private static final Pattern WORD_PATTERN = Pattern.compile("[\\p{L}]+");
 
     public List<ParagraphAnalysis> analyzeParagraphs(List<String> paragraphs) {
         List<ParagraphAnalysis> analyses = new ArrayList<>(paragraphs.size());

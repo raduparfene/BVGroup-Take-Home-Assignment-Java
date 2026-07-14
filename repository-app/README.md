@@ -7,6 +7,8 @@ This application consumes processed text results from Kafka, stores them in an H
 - Apache Kafka
 
 ## Running the application
+The complete system can be started with Docker Compose as described in the root `README.md`.
+
 From the repository root, run:
 
 Windows:
@@ -17,7 +19,8 @@ Linux/macOS:
 ```bash
 ./mvnw -pl repository-app spring-boot:run
 ```
-The application starts on port `8082` by default. H2 stores its data locally in the `.local-data` directory, so only Kafka must be started separately
+The application starts on port `8082` by default.
+H2 stores its data locally in the `.local-data` directory, so only Kafka must be started separately
 
 ## Kafka consumption
 - The application consumes the four field JSON produced by `processing-app` from topic `words.processed` by default. Messages are consumed as strings and deserialized before being stored

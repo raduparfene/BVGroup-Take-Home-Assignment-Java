@@ -5,6 +5,8 @@ This application retrieves paragraphs from Hipsum, returns aggregated text stati
 - Java 21
 
 ## Running the application
+The complete system can be started with Docker Compose as described in the root `README.md`.
+
 From the repository root, run:
 
 Windows:
@@ -15,7 +17,8 @@ Linux/macOS:
 ```bash
 ./mvnw -pl processing-app spring-boot:run
 ```
-The application starts on port `8081` by default
+The application starts on port `8081` by default. 
+When it is started outside Docker, Kafka is expected at `localhost:9092` unless `KAFKA_BOOTSTRAP_SERVERS` is supplied
 
 ## API
 `GET /betvictor/text?p={paragraphCount}`
@@ -64,6 +67,7 @@ The Hipsum requests are executed concurrently using a fixed-size thread pool
 ## Assumptions
 - Paragraph size means the number of normalized words in a paragraph
 - Words are compared case-insensitively
+- Numbers are not treated as words
 - Punctuation is treated as a word separator
 - Frequency ties are resolved alphabetically
 - Average paragraph processing time covers local text analysis only

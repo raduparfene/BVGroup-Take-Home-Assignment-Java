@@ -1,0 +1,56 @@
+services:
+  kafka:
+    image: apache/kafka:4.2.1
+    ports:
+      - "9092:29092"
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - ./docker/kafka/config:/mnt/shared/config:ro
+      - kafka-data:/var/lib/kafka/data
+
+  kafka-topic-setup:
+    image: apache/kafka:4.2.1
+    depends_on:
+      kafka:
+        condition: service_healthy
+    env_file:
+      - ./docker/environment/kafka.env
+    volumes:
+      - ./docker/kafka/scripts/create-topic.sh:/opt/kafka/create-topic.sh:ro
+    entrypoint: ["/bin/sh", "/opt/kafka/create-topic.sh"]
+
+  processing-app:
+    build:
+      context: .
+      dockerfile: processing-app/Dockerfile
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./docker/environment/kafka.env
+    depends_on:
+      kafka-topic-setup:
+        condition: service_completed_successfully
+
+  repository-app:
+    build:
+      context: .
+      dockerfile: repository-app/Dockerfile
+    ports:
+      - "8082:8082"
+    env_file:
+      - ./docker/environment/kafka.env
+      - ./docker/environment/repository-app.env
+    depends_on:
+      kafka-topic-setup:
+        condition: service_completed_successfully
+    volumes:
+      - repository-data:/app/.local-data
+
+volumes:
+  kafka-data:
+  repository-data:
