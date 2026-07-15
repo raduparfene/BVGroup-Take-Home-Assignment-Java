@@ -17,10 +17,11 @@ Windows:
 ```
 Linux/macOS:
 ```bash
-./mvnw -pl repository-app spring-boot:run
+sh ./mvnw -pl repository-app spring-boot:run
 ```
 The application starts on port `8082` by default.
 H2 stores its data locally in the `.local-data` directory, so only Kafka must be started separately
+To reset the local database, stop the application and delete the `repository-app/.local-data` directory
 
 ## Kafka consumption
 - The application consumes the four field JSON produced by `processing-app` from topic `words.processed` by default. Messages are consumed as strings and deserialized before being stored
@@ -66,6 +67,8 @@ The application can be configured through environment variables:
 - If processing fails, Kafka can send the message again
 - This also means that duplicate rows are possible after certain failures
 
+In a production version, failed messages could be retried after a short delay. Messages that keep failing could be moved to a separate Kafka topic for later investigation
+
 ## Running the tests
 From the repository root, run:
 
@@ -75,7 +78,7 @@ Windows:
 ```
 Linux/macOS:
 ```bash
-./mvnw -pl repository-app test
+sh ./mvnw -pl repository-app test
 ```
 
-The tests use an in memory H2 database and do not connect to a real Kafka broker. They verify message deserialization and persistence, together with the latest 10 HTTP contract.
+The tests use an in memory H2 database and an embedded Kafka broker. They verify the listener, message deserialization, persistence, committed offset and the latest 10 HTTP contract.

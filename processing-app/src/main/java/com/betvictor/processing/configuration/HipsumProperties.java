@@ -22,6 +22,12 @@ public class HipsumProperties {
     @Min(value = 1, message = "hipsum.max-concurrency must be greater than zero")
     private int maxConcurrency;
 
+    @Min(value = 1, message = "hipsum.connect-timeout-ms must be greater than zero")
+    private int connectTimeoutMs;
+
+    @Min(value = 1, message = "hipsum.read-timeout-ms must be greater than zero")
+    private int readTimeoutMs;
+
     @NotBlank(message = "hipsum.type must be configured")
     private String type;
 }

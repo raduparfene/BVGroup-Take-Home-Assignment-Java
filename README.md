@@ -37,7 +37,7 @@ The stack exposes:
 - Repository health: `http://localhost:8082/actuator/health`
 - Kafka broker for applications running on the host: `localhost:9092`
 
-The setup creates topic `words.processed` with four partitions. The topic name and partition count can be changed through `KAFKA_TOPIC_NAME` and `KAFKA_TOPIC_PARTITIONS`.
+The setup creates topic `words.processed` with four partitions. The topic name can be changed through `KAFKA_TOPIC_NAME`. `KAFKA_TOPIC_PARTITIONS` is used when the topic is first created; changing it later does not modify an existing topic.
 The `kafka-topic-setup` container creates the topic and then stops, so `Exited (0)` means that it completed successfully.
 Applications inside Docker use `kafka:9092`, while applications started from the IDE use `localhost:9092`. Port `29092` is only used by Docker to expose Kafka on `localhost:9092`.
 `KAFKA_BOOTSTRAP_SERVERS` can point both applications to a different Kafka broker.
@@ -63,9 +63,16 @@ The `local` mode stops the application containers, starts Kafka and creates the 
 
 ## Verification
 Run all automated tests from the repository root:
+
+Windows:
 ```powershell
 .\mvnw.cmd clean verify
 ```
+Linux/macOS:
+```bash
+sh ./mvnw clean verify
+```
+The Kafka integration tests start a temporary embedded broker, so Docker does not need to be running.
 
 ## Requirements
 The checklists below track implementation and verification status

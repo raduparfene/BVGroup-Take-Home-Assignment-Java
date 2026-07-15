@@ -1,6 +1,7 @@
 package com.betvictor.processing.service;
 
 import com.betvictor.processing.data.ParagraphAnalysis;
+import com.betvictor.processing.exception.NoWordsFoundException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -52,7 +53,7 @@ class ParagraphAnalyzerServiceTest {
         List<ParagraphAnalysis> analyses = analyzerService.analyzeParagraphs(List.of("..."));
 
         assertThatThrownBy(() -> analyzerService.extractMostFrequentWord(analyses))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(NoWordsFoundException.class)
                 .hasMessage("Hipsum paragraphs contained no words");
     }
 }

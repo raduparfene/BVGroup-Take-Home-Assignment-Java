@@ -15,7 +15,7 @@ Windows:
 ```
 Linux/macOS:
 ```bash
-./mvnw -pl processing-app spring-boot:run
+sh ./mvnw -pl processing-app spring-boot:run
 ```
 The application starts on port `8081` by default. 
 When it is started outside Docker, Kafka is expected at `localhost:9092` unless `KAFKA_BOOTSTRAP_SERVERS` is supplied
@@ -37,7 +37,7 @@ Example response:
   "total_processing_time": 210.5
 }
 ```
-All time values are expressed in milliseconds. Invalid or missing `p` returns HTTP `400`. A failed Hipsum request or a response rejected by the Hipsum client returns HTTP `502`. A Kafka publishing failure returns HTTP `503`
+All time values are expressed in milliseconds. Invalid or missing `p` returns HTTP `400`. A failed Hipsum request or an invalid Hipsum response returns HTTP `502`. A Kafka publishing failure returns HTTP `503`
 
 ## Kafka publishing
 Every successful request publishes one message to topic `words.processed` by default. The Kafka value contains the same four-field JSON returned by the HTTP endpoint
@@ -53,6 +53,8 @@ The application can be configured through environment variables:
 | `HIPSUM_BASE_URL`                | `https://hipsum.co` | Hipsum base URL                                                              |
 | `HIPSUM_TYPE`                    | `hipster-centric`   | Hipsum text type                                                             |
 | `HIPSUM_MAX_CONCURRENCY`         | `8`                 | Maximum concurrent Hipsum requests                                           |
+| `HIPSUM_CONNECT_TIMEOUT_MS`      | `3000`              | Maximum time allowed to connect to Hipsum                                    |
+| `HIPSUM_READ_TIMEOUT_MS`         | `10000`             | Maximum time allowed to wait for a Hipsum response                           |
 | `KAFKA_TOPIC_NAME`               | `words.processed`   | Kafka topic receiving the processing results                                 |
 | `KAFKA_BOOTSTRAP_SERVERS`        | `localhost:9092`    | Kafka broker addresses                                                       |
 | `KAFKA_MAX_BLOCK_MS`             | `5000`              | Maximum time a Kafka send can wait for metadata or buffer space              |
@@ -82,7 +84,7 @@ Windows:
 ```
 Linux/macOS:
 ```bash
-./mvnw -pl processing-app test
+sh ./mvnw -pl processing-app test
 ```
 
-The test suite covers the text analysis rules, Hipsum request and response handling, service orchestration, HTTP contract, Kafka publishing, validation and external system failures. The tests do not call the real Hipsum service or a real Kafka broker.
+The test suite covers the text analysis rules, Hipsum request and response handling, service orchestration, HTTP contract, Kafka publishing, validation and external system failures. It starts an embedded Kafka broker to verify the producer key, partition count and message order. It does not call the real Hipsum service.

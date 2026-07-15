@@ -40,6 +40,11 @@ public class GlobalExceptionHandler {
         return errorResponse(HttpStatus.BAD_GATEWAY, "Failed to retrieve paragraphs from Hipsum", request);
     }
 
+    @ExceptionHandler(NoWordsFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleParagraphsWithoutWords(NoWordsFoundException exception, HttpServletRequest request) {
+        return errorResponse(HttpStatus.BAD_GATEWAY, exception.getMessage(), request);
+    }
+
     @ExceptionHandler({org.springframework.kafka.KafkaException.class, org.apache.kafka.common.KafkaException.class})
     public ResponseEntity<ApiErrorResponse> handleKafkaFailure(HttpServletRequest request) {
         return errorResponse(HttpStatus.SERVICE_UNAVAILABLE, "Failed to publish the processing result", request);

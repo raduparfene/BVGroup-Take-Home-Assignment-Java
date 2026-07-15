@@ -102,6 +102,15 @@ class TextProcessingApiIntegrationTest {
     }
 
     @Test
+    void returnsBadGatewayForParagraphsWithoutWords() {
+        when(hipsumClient.fetchParagraphs(1)).thenReturn(List.of("..."));
+
+        assertError(requestText(1), 502, "Hipsum paragraphs contained no words");
+        verify(hipsumClient).fetchParagraphs(1);
+        verify(kafkaTemplate, never()).send(anyString(), anyString(), anyString());
+    }
+
+    @Test
     void returnsServiceUnavailableForKafkaFailure() {
         when(hipsumClient.fetchParagraphs(1)).thenReturn(List.of("alpha beta beta"));
         when(kafkaTemplate.send(anyString(), anyString(), anyString()))

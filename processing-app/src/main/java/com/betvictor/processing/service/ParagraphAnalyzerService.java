@@ -1,6 +1,7 @@
 package com.betvictor.processing.service;
 
 import com.betvictor.processing.data.ParagraphAnalysis;
+import com.betvictor.processing.exception.NoWordsFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public class ParagraphAnalyzerService {
         }
 
         if (mostFrequentWord == null) {
-            throw new IllegalStateException("Hipsum paragraphs contained no words");
+            throw new NoWordsFoundException();
         }
         return mostFrequentWord;
     }

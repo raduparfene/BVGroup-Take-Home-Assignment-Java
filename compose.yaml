@@ -32,6 +32,7 @@ services:
       - "8081:8081"
     env_file:
       - ./docker/environment/kafka.env
+      - ./docker/environment/processing-app.env
     depends_on:
       kafka-topic-setup:
         condition: service_completed_successfully
